@@ -1,0 +1,70 @@
+// Source Code for Sea Glass Ornamnent using CircuitPlayground
+// board from AdaFruit.
+// License: GPL2
+
+#include <Adafruit_CircuitPlayground.h>
+#define PIXELS 10
+#define MAX_RATE 1
+#define BRIGHT 256
+#define LIKELY 1000
+
+uint8_t r[PIXELS], g[PIXELS], b[PIXELS], r_target[PIXELS], g_target[PIXELS], b_target[PIXELS], rate[PIXELS];
+int  black[PIXELS];
+
+void set_new_target(int i) {
+  black[i] = (int) random(0, LIKELY);
+  if (black[i] == 0) {
+
+    r_target[i] = random(0, BRIGHT);
+    g_target[i] = random(0, BRIGHT);
+    b_target[i] = random(0, BRIGHT);
+    rate[i] = random(1, (MAX_RATE + 1));
+  }
+  else {
+    r_target[i] = 0;
+    g_target[i] = 0;
+    b_target[i] = 0;
+    rate[i] = random(1, (MAX_RATE + 1));
+  }
+}
+
+int next_value( uint8_t value, uint8_t rate, uint8_t target ) {
+  if (value != target ) {
+    if (value < target) {
+      value = value + rate;
+      if (value > target) {
+        value = target;
+      }
+    } else {
+      value = value - rate;
+      if (value < target) {
+        value = target;
+      }
+    }
+  };
+  return (value);
+}
+
+void setup() {
+  CircuitPlayground.begin();
+  CircuitPlayground.redLED(LOW);
+  CircuitPlayground.clearPixels();
+  for (int i = 0; i < PIXELS; i++) {
+    set_new_target(i);
+  }
+}
+
+void loop() {
+  for (int i = 0; i < PIXELS; i++) {
+    if ( (r[i] == r_target[i]) && (g[i] == g_target[i]) && (b[i] == b_target[i])) {
+      set_new_target(i);
+    }
+    else {
+      r[i] = next_value( r[i], rate[i], r_target[i]);
+      g[i] = next_value( g[i], rate[i], g_target[i]);
+      b[i] = next_value( b[i], rate[i], b_target[i]);
+    }
+    CircuitPlayground.setPixelColor(i, r[i], g[i], b[i]);
+
+  }
+}
